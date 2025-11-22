@@ -7,9 +7,28 @@
 
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <title>Poschair</title>
+
+  <style>
+    .loading-circle {
+      margin: auto;
+      width: fit-content;
+      height: fit-content;
+
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: -1;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="loading-circle">
+    <img src="/loadingCircle.svg" alt="Loading..." />
+  </div>
+
   <script type="module" src="/src/main.ts"></script>
 </body>
 
