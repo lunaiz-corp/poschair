@@ -1,0 +1,136 @@
+import p5 from "p5";
+import * as tmImage from "@teachablemachine/image";
+
+import reallyAnnoyingSound from "./assets/annoying_sound.webm";
+import "./style.css";
+
+//#region Global variables
+let buffer: p5.Graphics;
+let maskGraphics: p5.Graphics;
+let capture: p5.MediaElement;
+
+let prediction: {
+  className: string;
+  probability: number;
+} = { className: "", probability: 0 };
+
+let badPositionFlag = false;
+let badStartTime: number | null = null;
+
+const reallyAnnoyingSoundEl = new Audio(reallyAnnoyingSound);
+reallyAnnoyingSoundEl.loop = true;
+//#endregion
+
+//#region Teachable Machine model initialisation
+const tmUrl = "https://teachablemachine.withgoogle.com/models/pMs1-lOWP/";
+const tmModel = await tmImage.load(
+  tmUrl + "model.json",
+  tmUrl + "metadata.json"
+);
+//#endregion
+
+//#region Prediction function
+async function predictImage() {
+  const $capture = document.getElementById("capture") as HTMLVideoElement;
+  const tmPrediction = await tmModel.predict($capture, false);
+
+  // Get highest probability prediction
+  prediction = tmPrediction.sort((a, b) => b.probability - a.probability)[0];
+
+  console.log(
+    `Predicted Class: ${prediction.className}, Probability: ${prediction.probability}`
+  );
+
+  // Check for BAD_POSITION maintained for n seconds
+  if (prediction.className === "BAD_POSITION") {
+    if (badStartTime === null) {
+      // First time BAD_POSITION detected
+      badStartTime = performance.now();
+    } else {
+      // Check elapsed time
+      const elapsed = performance.now() - badStartTime;
+      if (elapsed >= 10000) badPositionFlag = true;
+    }
+  } else {
+    // Reset if not BAD_POSITION
+    badStartTime = null;
+    badPositionFlag = false;
+  }
+
+  // TODO: Send serial data to Arduino here
+
+  // Schedule next prediction
+  setTimeout(() => {
+    predictImage();
+  }, 100);
+}
+//#endregion
+
+//#region p5 sketch
+new p5((p: p5) => {
+  p.setup = () => {
+    p.createCanvas(p.windowWidth, p.windowHeight);
+
+    // Video buffer
+    buffer = p.createGraphics(512, 384);
+
+    // Mask graphics
+    maskGraphics = p.createGraphics(512, 384);
+    maskGraphics.noStroke();
+    maskGraphics.fill(255);
+    maskGraphics.ellipse(192, 192, 384, 384);
+
+    // Create the video
+    capture = p.createCapture(p.VIDEO, { flipped: true });
+    capture.id("capture");
+    capture.size(512, 384);
+    capture.hide();
+
+    predictImage();
+  };
+
+  p.draw = () => {
+    if (badPositionFlag) {
+      p.background(239, 68, 68);
+
+      if (reallyAnnoyingSoundEl.paused) {
+        reallyAnnoyingSoundEl.currentTime = 13.5; // Skip intro part
+        reallyAnnoyingSoundEl.play(); // Don't do this in school please
+      } else if (reallyAnnoyingSoundEl.currentTime >= 77) {
+        reallyAnnoyingSoundEl.currentTime = 13.5; // Loop back to main part
+      }
+    } else {
+      if (!reallyAnnoyingSoundEl.paused) {
+        reallyAnnoyingSoundEl.pause();
+      }
+
+      p.background(80);
+    }
+
+    // Draw the video to the buffer
+    buffer.image(capture, 0, 0, buffer.width, buffer.height);
+
+    // Apply mask
+    let masked = buffer.get();
+    masked.mask(maskGraphics.get());
+    p.image(masked, p.width / 2 - 192, p.height / 2 - 192);
+
+    // Draw status text
+    p.textAlign(p.CENTER, p.CENTER);
+    p.textSize(32);
+    p.fill(255);
+    p.noStroke();
+    p.text(
+      `Position: ${prediction.className.split("_")[0]} (${(
+        prediction.probability * 100
+      ).toFixed(2)}%)`,
+      p.width / 2,
+      p.height - 100
+    );
+  };
+
+  p.windowResized = () => {
+    p.resizeCanvas(p.windowWidth, p.windowHeight);
+  };
+});
+//#endregion
