@@ -24,12 +24,16 @@ const licenseOptions: LicenseOptions = {
           "utf-8"
         );
         const licenses = dependencies
-          .filter((d) => d.license && d.licenseText)
+          // .filter((d) => d.license && d.licenseText)
+          .filter((d) => d.name !== "poschair")
           .sort((a, b) => a.license!.localeCompare(b.license!))
           .map(
             (d) =>
               `<h2>${d.name}@${d.version}</h2>
-               <p class="license-text">${d.licenseText}</p>
+               <p class="license-text">${
+                 d.licenseText ||
+                 `No LICENSE file found in the package. Please check <a href="https://npmjs.com/package/${d.name}/v/${d.version}" target="_blank" rel="noopener noreferrer">the source code</a> directly.`
+               }</p>
               `
           )
           .join("\n");
