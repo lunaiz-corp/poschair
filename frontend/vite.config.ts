@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { defineConfig } from "vite";
 import type { UserConfig } from "vite";
 
+import { cloudflare } from "@cloudflare/vite-plugin";
 import htmlTerserCompression from "vite-plugin-simple-html";
 import license, { Options as LicenseOptions } from "rollup-plugin-license";
 
@@ -53,7 +54,11 @@ export default defineConfig({
     },
   },
 
-  plugins: [license(licenseOptions), htmlTerserCompression({ minify: true })],
+  plugins: [
+    cloudflare(),
+    license(licenseOptions),
+    htmlTerserCompression({ minify: true }),
+  ],
 
   clearScreen: false,
   resolve: {

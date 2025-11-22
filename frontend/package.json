@@ -9,10 +9,12 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.15.2",
     "rollup-plugin-license": "^3.6.0",
     "typescript": "~5.9.3",
     "vite": "npm:rolldown-vite@7.2.5",
-    "vite-plugin-simple-html": "^1.0.1"
+    "vite-plugin-simple-html": "^1.0.1",
+    "wrangler": "^4.50.0"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.2.5"
