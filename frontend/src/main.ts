@@ -1,7 +1,7 @@
 import p5 from "p5";
 import * as tmImage from "@teachablemachine/image";
 
-import reallyAnnoyingSound from "./assets/annoying_sound.webm";
+import reallyAnnoyingSound from "./assets/annoying_sound.flac";
 import plusJakartaSansMedium from "./assets/PlusJakartaSans-Medium.ttf";
 import "./style.css";
 
@@ -99,19 +99,10 @@ new p5((p: p5) => {
     p.textFont(plusJakartaSansMediumFont);
 
     if (badPositionFlag) {
+      reallyAnnoyingSoundEl.paused && reallyAnnoyingSoundEl.play(); // Don't do this in school please
       p.background(239, 68, 68);
-
-      if (reallyAnnoyingSoundEl.paused) {
-        reallyAnnoyingSoundEl.currentTime = 13.5; // Skip intro part
-        reallyAnnoyingSoundEl.play(); // Don't do this in school please
-      } else if (reallyAnnoyingSoundEl.currentTime >= 77) {
-        reallyAnnoyingSoundEl.currentTime = 13.5; // Loop back to main part
-      }
     } else {
-      if (!reallyAnnoyingSoundEl.paused) {
-        reallyAnnoyingSoundEl.pause();
-      }
-
+      !reallyAnnoyingSoundEl.paused && reallyAnnoyingSoundEl.pause(); // Yes please
       p.background(80);
     }
 
