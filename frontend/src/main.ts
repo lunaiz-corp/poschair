@@ -2,6 +2,7 @@ import p5 from "p5";
 import * as tmImage from "@teachablemachine/image";
 
 import reallyAnnoyingSound from "./assets/annoying_sound.webm";
+import plusJakartaSansMedium from "./assets/PlusJakartaSans-Medium.ttf";
 import "./style.css";
 
 //#region Global variables
@@ -17,8 +18,8 @@ let prediction: {
 let badPositionFlag = false;
 let badStartTime: number | null = null;
 
-const reallyAnnoyingSoundEl = new Audio(reallyAnnoyingSound);
-reallyAnnoyingSoundEl.loop = true;
+let plusJakartaSansMediumFont: p5.Font;
+let reallyAnnoyingSoundEl: HTMLAudioElement;
 //#endregion
 
 //#region Teachable Machine model initialisation
@@ -68,8 +69,13 @@ async function predictImage() {
 
 //#region p5 sketch
 new p5((p: p5) => {
-  p.setup = () => {
+  p.setup = async () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
+
+    // Load assets
+    plusJakartaSansMediumFont = await p.loadFont(plusJakartaSansMedium);
+    reallyAnnoyingSoundEl = new Audio(reallyAnnoyingSound);
+    reallyAnnoyingSoundEl.loop = true;
 
     // Video buffer
     buffer = p.createGraphics(512, 384);
@@ -90,6 +96,8 @@ new p5((p: p5) => {
   };
 
   p.draw = () => {
+    p.textFont(plusJakartaSansMediumFont);
+
     if (badPositionFlag) {
       p.background(239, 68, 68);
 
