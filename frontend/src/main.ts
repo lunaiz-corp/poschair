@@ -53,6 +53,21 @@ async function openPort() {
 
   return port;
 }
+
+const button = document.createElement("button");
+button.textContent = "Connect to Arduino";
+button.style.position = "absolute";
+button.style.top = "10px";
+button.style.left = "10px";
+button.style.zIndex = "1000";
+document.body.appendChild(button);
+
+button.addEventListener("click", async () => {
+  port = await openPort();
+  writer = port.writable.getWriter();
+  button.disabled = true;
+  button.textContent = "Connected to Arduino";
+});
 //#endregion
 
 //#region Prediction function
@@ -98,9 +113,6 @@ async function predictImage() {
 new p5((p: p5) => {
   p.setup = async () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
-
-    port = await openPort();
-    writer = port.writable.getWriter();
 
     // Load assets
     plusJakartaSansMediumFont = await p.loadFont(plusJakartaSansMedium);
