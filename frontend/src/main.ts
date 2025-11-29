@@ -82,7 +82,9 @@ async function predictImage() {
     `Predicted Class: ${prediction.className}, Probability: ${prediction.probability}`
   );
 
-  await writer.write(encoder.encode(prediction.className));
+  if (writer) {
+    await writer.write(encoder.encode(prediction.className));
+  }
 
   // Check for BAD_POSITION maintained for n seconds
   if (prediction.className === "BAD_POSITION") {
