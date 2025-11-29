@@ -20,6 +20,10 @@ let badStartTime: number | null = null;
 
 let plusJakartaSansMediumFont: p5.Font;
 let reallyAnnoyingSoundEl: HTMLAudioElement;
+
+let port: any;
+let writer: any;
+let encoder = new TextEncoder();
 //#endregion
 
 //#region Teachable Machine model initialisation
@@ -28,6 +32,27 @@ const tmModel = await tmImage.load(
   tmUrl + "model.json",
   tmUrl + "metadata.json"
 );
+//#endregion
+
+//#region Serial communication setup (Arduino)
+declare global {
+  interface Navigator {
+    serial: any;
+  }
+}
+
+async function openPort() {
+  if (!("serial" in navigator)) {
+    // Web Serial API가 지원되지 않습니다.
+    alert("Web Serial API is not supported in this browser.");
+    return;
+  }
+
+  const port = await navigator.serial.requestPort();
+  await port.open({ baudRate: 9600 });
+
+  return port;
+}
 //#endregion
 
 //#region Prediction function
@@ -41,6 +66,8 @@ async function predictImage() {
   console.log(
     `Predicted Class: ${prediction.className}, Probability: ${prediction.probability}`
   );
+
+  await writer.write(encoder.encode(prediction.className));
 
   // Check for BAD_POSITION maintained for n seconds
   if (prediction.className === "BAD_POSITION") {
@@ -71,6 +98,9 @@ async function predictImage() {
 new p5((p: p5) => {
   p.setup = async () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
+
+    port = await openPort();
+    writer = port.writable.getWriter();
 
     // Load assets
     plusJakartaSansMediumFont = await p.loadFont(plusJakartaSansMedium);
