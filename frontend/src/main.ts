@@ -83,7 +83,7 @@ async function predictImage() {
   );
 
   if (writer) {
-    await writer.write(encoder.encode(prediction.className));
+    await writer.write(encoder.encode(prediction.className + "\n"));
   }
 
   // Check for BAD_POSITION maintained for n seconds
